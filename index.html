@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sello Raíz Segura</title>
+    <style>
+        :root {
+            --primary-green: #2e7d32;
+            --light-green: #4caf50;
+            --bg-gray: #f5f5f5;
+            --text-dark: #333;
+            --text-light: #fff;
+            --shadow-soft: 0 4px 6px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+            --status-green: #4caf50;
+            --status-yellow: #ffeb3b;
+            --status-red: #f44336;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-gray);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        /* Navbar */
+        .navbar {
+            background-color: var(--primary-green);
+            color: var(--text-light);
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-soft);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links button {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+
+        .nav-links button:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+            padding: 2rem 5%;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Hero Section */
+        /* ✅ CAMBIO: La ruta del fondo ahora apunta a img/forest_bg.jpg */
+        .hero {
+            background: linear-gradient(rgba(46, 125, 50, 0.9), rgba(76, 175, 80, 0.8)),
+                        url('img/forest_bg.jpg') center/cover no-repeat;
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Cards General */
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background-color: var(--light-green);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .btn:hover {
+            background-color: var(--primary-green);
+        }
+
+        /* ✅ NUEVO: Estilo para el botón "Ver certificado" */
+        .btn-certificado {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: #1565c0;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            text-decoration: none;
+            transition: var(--transition);
+            box-shadow: 0 3px 6px rgba(21, 101, 192, 0.4);
+        }
+
+        .btn-certificado:hover {
+            background-color: #0d47a1;
+            box-shadow: 0 5px 10px rgba(21, 101, 192, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Productor Panel */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .drag-area {
+            border: 2px dashed var(--primary-green);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+
+        .drag-area.dragover {
+            background-color: #e8f5e9;
+        }
+
+        #upload-status {
+            margin-top: 15px;
+            font-weight: bold;
+            color: #ff9800;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .modal-content h2 {
+            color: var(--primary-green);
+            margin-bottom: 15px;
+        }
+
+        /* Comprador Panel */
+        .marketplace {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .vendor-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--shadow-soft);
+            cursor: pointer;
+            transition: transform 0.2s;
+            border-top: 5px solid transparent;
+        }
+
+        .vendor-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .vendor-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+            border: 2px solid #ddd;
+        }
+
+        .vendor-card.status-verde { border-color: var(--status-green); }
+        .vendor-card.status-amarillo { border-color: var(--status-yellow); }
+        .vendor-card.status-rojo { border-color: var(--status-red); }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .badge.verde { background-color: #e8f5e9; color: #2e7d32; }
+        .badge.amarillo { background-color: #fffde7; color: #f57f17; }
+        .badge.rojo { background-color: #ffebee; color: #c62828; }
+
+        /* Lotes List */
+        .lote-item {
+            background: white;
+            border-left: 4px solid var(--primary-green);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            cursor: pointer;
+        }
+
+        .lote-item:hover {
+            background: #f1f8e9;
+        }
+
+        .doc-link {
+            color: #1976d2;
+            text-decoration: none;
+            font-size: 0.9em;
+            margin-left: 5px;
+        }
+        .doc-link:hover { text-decoration: underline; }
+
+        .back-btn {
+            background-color: #757575;
+            margin-bottom: 20px;
+        }
+
+        /* ✅ NUEVO: Caja contenedora del botón de certificado en el detalle del lote */
+        .certificado-box {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #e3f2fd;
+            border-radius: 8px;
+            border-left: 5px solid #1565c0;
+            text-align: center;
+        }
+
+        .certificado-box p {
+            margin-bottom: 12px;
+            color: #1a237e;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        /* --- Mejoras para móviles (Responsive) --- */
+        .hero-buttons {
+            display: flex; gap: 20px; justify-content: center; margin-top: 2rem;
+        }
+        .btn-large {
+            padding: 15px 30px; font-size: 1.2rem;
+        }
+        .btn-dark {
+            background-color: #333;
+        }
+        .btn-dark:hover {
+            background-color: #000;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                padding: 1rem;
+                gap: 15px;
+            }
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+            }
+            .hero {
+                padding: 2rem 1rem;
+            }
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+            .hero p {
+                font-size: 1rem;
+            }
+            .hero-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .btn, .btn-large, .btn-certificado {
+                width: 100%;
+                text-align: center;
+                justify-content: center;
+                box-sizing: border-box;
+            }
+            .marketplace {
+                grid-template-columns: 1fr;
+            }
+            .card {
+                padding: 15px;
+            }
+            ul {
+                padding-left: 0;
+            }
+            li {
+                word-wrap: break-word;
+            }
+            .vendor-card {
+                margin: 0 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">🌲 Sello Raíz Segura</div>
+        <div class="nav-links">
+            <button onclick="navigate('inicio')">Inicio</button>
+            <button onclick="navigate('documentacion')">Documentación</button>
+            <button onclick="navigate('productor')">Soy Productor/Vendedor</button>
+            <button onclick="navigate('comprador')">Soy Comprador</button>
+        </div>
+    </nav>
+
+    <!-- Sección 1: Inicio -->
+    <section id="inicio" class="section active">
+        <div class="hero">
+            <h1>¿Qué es el Sello Raíz Segura?</h1>
+            <p>Consiste en un código QR con un listado de trazabilidad total con todo el procedimiento y origen de un lote de madera. Tiene el objetivo de dar transparencia y agilidad al momento de concretar compras o trámites.</p>
+        </div>
+        <div class="hero-buttons">
+            <button class="btn btn-large" onclick="navigate('productor')">Portal Vendedores</button>
+            <button class="btn btn-large btn-dark" onclick="navigate('comprador')">Portal Compradores</button>
+            <a href="lector.html" target="_blank" class="btn btn-large" style="background-color: #f57f17; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; color: white;">📸 Escáner QR</a>
+        </div>
+    </section>
+
+    <!-- Sección 2: Documentación -->
+    <section id="documentacion" class="section">
+        <div class="card">
+            <h2>Biblioteca de formularios y normativas</h2>
+            <p>Accede a todos los documentos legales, normativas forestales y plantillas necesarias para la certificación.</p>
+            <br>
+            <a href="https://www.bcn.cl/leychile/navegar?idNorma=274894" target="_blank" rel="noopener noreferrer" class="btn" style="text-decoration: none; display: inline-block;">Acceder a Biblioteca (Enlace Externo)</a>
+        </div>
+    </section>
+
+    <!-- Punto 3: Soy Productor/Vendedor -->
+    <section id="productor" class="section">
+        <div class="card">
+            <h2>Panel del Productor / Vendedor</h2>
+            <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
+
+            <h3>3.1 Cambiar datos de contacto</h3>
+            <div class="form-group" style="margin-top: 10px;">
+                <input type="text" placeholder="Nuevo Teléfono / Correo">
+                <button class="btn" style="margin-top: 10px;">Actualizar Datos</button>
+            </div>
+
+            <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
+
+            <h3>3.2 Inscribir Lote de Madera</h3>
+            <p style="color: #666; margin-bottom: 15px;">Instrucciones: Arrastre los documentos de procedencia, plan de manejo y certificaciones al recuadro inferior para iniciar la validación.</p>
+
+            <div class="form-group">
+                <label>Nombre del Lote / Especie</label>
+                <input type="text" id="lote-name" placeholder="Ej: Pino Radiata - Fundo El Roble">
+            </div>
+
+            <div class="drag-area" id="drop-zone">
+                <p>Arrastra tus documentos aquí (PDF, JPG, PNG)</p>
+                <p style="font-size: 0.8rem; color: #999;">o haz clic para seleccionar archivos</p>
+                <input type="file" hidden id="file-input" multiple>
+            </div>
+
+            <p id="upload-status"></p>
+        </div>
+    </section>
+
+    <!-- Modal Aprobación -->
+    <div class="modal" id="success-modal">
+        <div class="modal-content">
+            <h2>✅ Lote Aprobado</h2>
+            <p>Sus documentos han sido validados con éxito. El Sello Raíz Segura ha sido emitido.</p>
+            <br>
+            <button class="btn" onclick="descargarCertificado()">Ver Certificado (Descargar PDF)</button>
+            <button class="btn" style="background-color: #ccc; color: #333; margin-left: 10px;" onclick="closeModal()">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Punto 4: Soy Comprador (Marketplace) -->
+    <section id="comprador" class="section">
+        <h2>Marketplace de Vendedores</h2>
+        <p style="margin-bottom: 20px;">Empresas verificadas dentro del programa Sello Raíz Segura.</p>
+        <div class="marketplace" id="vendor-list">
+            <!-- Vendedores inyectados via JS -->
+        </div>
+    </section>
+
+    <!-- Detalle del Vendedor -->
+    <section id="vendedor-detalle" class="section">
+        <button class="btn back-btn" onclick="navigate('comprador')">⬅ Volver al Marketplace</button>
+        <div class="card" id="vendor-info-card">
+            <!-- Info inyectada via JS -->
+        </div>
+        <h3 style="margin: 30px 0 15px 0;">Lotes de Madera Disponibles</h3>
+        <div id="lotes-list">
+            <!-- Lotes inyectados via JS -->
+        </div>
+    </section>
+
+    <!-- Detalle del Lote -->
+    <section id="lote-detalle" class="section">
+        <button class="btn back-btn" onclick="navigate('vendedor-detalle')">⬅ Volver a Lotes</button>
+        <div class="card" id="lote-info-card">
+            <!-- Info del lote inyectada via JS -->
+        </div>
+    </section>
+
+    <script>
+        // ============================================================
+        // --- Navegación SPA ---
+        // ============================================================
+        function navigate(sectionId, updateUrl = true) {
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            window.scrollTo(0, 0);
+            
+            if (updateUrl) {
+                if (sectionId === 'inicio') {
+                    window.history.pushState({}, "", window.location.pathname);
+                } else if (sectionId !== 'lote-detalle' && sectionId !== 'vendedor-detalle') {
+                    window.history.pushState({section: sectionId}, "", "?seccion=" + sectionId);
+                }
+            }
+        }
+
+        // ============================================================
+        // --- Lógica del Productor (Dropzone) ---
+        // ============================================================
+        const dropZone = document.getElementById('drop-zone');
+        const uploadStatus = document.getElementById('upload-status');
+        const modal = document.getElementById('success-modal');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            iniciarSimulacionCarga();
+        });
+
+        dropZone.addEventListener('click', () => {
+            iniciarSimulacionCarga();
+        });
+
+        function iniciarSimulacionCarga() {
+            uploadStatus.textContent = "En revisión, espere entre 1 a 15 minutos para validación...";
+            uploadStatus.style.color = "#f57f17";
+            setTimeout(() => {
+                uploadStatus.textContent = "";
+                modal.style.display = "flex";
+            }, 5000);
+        }
+
+        function closeModal() {
+            modal.style.display = "none";
+        }
+
+        function descargarCertificado() {
+            const loteName = document.getElementById('lote-name').value || 'Lote_Generico';
+            const textContent = `CERTIFICADO SELLO RAÍZ SEGURA\n\nLote: ${loteName}\nEstado: APROBADO\nFecha: ${new Date().toLocaleDateString()}`;
+            const blob = new Blob([textContent], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Certificado_${loteName}.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
+            closeModal();
+        }
+
+        // ============================================================
+        // --- Datos de Vendedores y Lotes ---
+        // ============================================================
+        const vendors = [
+            {
+                id: 1, name: "CELULOSA ARAUCO", status: "verde", msg: "certificado y al dia",
+                dir: "Fundo El Roble, Región de la Araucanía", tel: "+56 9 1111 2222", email: "FORESTAL@CELULOSAARAUCO.cl",
+                planManejo: "15 de junio de 2026",
+                lotes: [
+                    { id: 1,  especie: "Pino radiata", origen: "Fundo El Roble, Región de la Araucanía",          dim: "2x4x300 cm / 12.50 metros cúbicos", disp: "Disponible", fecha: "28 de abril de 2026" },
+                    { id: 2,  especie: "Eucalipto",    origen: "Hacienda Las Quilas, Región del Biobío",           dim: "2x5x320 cm / 15.00 metros cúbicos", disp: "Disponible", fecha: "29 de abril de 2026" },
+                    { id: 3,  especie: "Alamo",        origen: "Predio Santa María, Región del Ñuble",             dim: "2x4x300 cm / 12.50 metros cúbicos", disp: "Ocupado",    fecha: "30 de abril de 2026" },
+                    { id: 4,  especie: "Oregon",       origen: "Fundo Los Pellines, Región de Los Ríos",           dim: "2x6x400 cm / 20.00 metros cúbicos", disp: "Disponible", fecha: "01 de mayo de 2026"  },
+                    { id: 5,  especie: "Quillay",      origen: "Fundo El Belloto, Región de O'Higgins",            dim: "2x4x300 cm / 12.50 metros cúbicos", disp: "Disponible", fecha: "02 de mayo de 2026"  },
+                    { id: 6,  especie: "Peumo",        origen: "Hacienda El Ruil, Región del Maule",               dim: "1x4x200 cm / 8.50 metros cúbicos",  disp: "Ocupado",    fecha: "03 de mayo de 2026"  }
+                ]
+            },
+            {
+                id: 2, name: "FORESTAL MININCO CMPC", status: "verde", msg: "certificado y al dia",
+                dir: "Fundo San Pedro, Región de la Araucanía", tel: "+56 9 3333 4444", email: "FORESTAL@FORESTALMININCOCMPC.cl",
+                planManejo: "02 de julio de 2026",
+                lotes: [
+                    { id: 7,  especie: "Boldo",  origen: "Fundo San Pedro, Región de la Araucanía",         dim: "2x4x300 cm / 12.50 metros cúbicos", disp: "Disponible", fecha: "04 de mayo de 2026" },
+                    { id: 8,  especie: "Roble",  origen: "Predio La Cascada, Región del Biobío",             dim: "2x8x400 cm / 25.00 metros cúbicos", disp: "Disponible", fecha: "05 de mayo de 2026" },
+                    { id: 9,  especie: "Maiten", origen: "Fundo Los Copihues, Región del Ñuble",             dim: "2x4x300 cm / 12.50 metros cúbicos", disp: "Disponible", fecha: "06 de mayo de 2026" },
+                    { id: 10, especie: "Lingue", origen: "Hacienda Las Alerces, Región de Los Ríos",         dim: "1x6x300 cm / 10.00 metros cúbicos", disp: "Ocupado",    fecha: "28 de abril de 2026" }
+                ]
+            },
+            {
+                id: 3, name: "FORESTAL ANCHILE", status: "verde", msg: "certificado y al dia",
+                dir: "Fundo La Esperanza, Región de O'Higgins", tel: "+56 9 5555 6666", email: "FORESTAL@FORESTALANCHILE.cl",
+                planManejo: "20 de agosto de 2026",
+                lotes: [
+                    { id: 11, especie: "Avellanillo",  origen: "Fundo La Esperanza, Región de O'Higgins",    dim: "2x4x300 cm / 12.50 metros cúbicos", disp: "Disponible", fecha: "29 de abril de 2026" },
+                    { id: 12, especie: "Pino radiata", origen: "Predio El Canelo, Región del Maule",          dim: "2x5x320 cm / 15.00 metros cúbicos", disp: "Disponible", fecha: "30 de abril de 2026" },
+                    { id: 13, especie: "Eucalipto",    origen: "Fundo Los Notros, Región de la Araucanía",    dim: "2x4x300 cm / 12.50 metros cúbicos", disp: "Ocupado",    fecha: "01 de mayo de 2026"  },
+                    { id: 14, especie: "Alamo",        origen: "Hacienda El Maqui, Región del Biobío",        dim: "2x6x400 cm / 20.00 metros cúbicos", disp: "Disponible", fecha: "02 de mayo de 2026"  }
+                ]
+            },
+            {
+                id: 4, name: "SUR MADERAS AUSTRAL", status: "amarillo", msg: "lotes en proceso de verificacion",
+                dir: "Predio Las Bandurrias, Región del Ñuble", tel: "+56 9 7777 8888", email: "FORESTAL@SURMADERASAUSTRAL.cl",
+                planManejo: "10 de septiembre de 2026",
+                lotes: [
+                    { id: 15, especie: "Oregon",  origen: "Predio Las Bandurrias, Región del Ñuble",         dim: "2x4x300 cm / 12.50 metros cúbicos", disp: "Disponible", fecha: "03 de mayo de 2026"  },
+                    { id: 16, especie: "Quillay", origen: "Fundo El Arrayán, Región de Los Ríos",             dim: "2x8x400 cm / 25.00 metros cúbicos", disp: "Disponible", fecha: "04 de mayo de 2026"  },
+                    { id: 17, especie: "Peumo",   origen: "Fundo El Roble, Región de la Araucanía",           dim: "1x4x200 cm / 8.50 metros cúbicos",  disp: "Ocupado",    fecha: "05 de mayo de 2026"  },
+                    { id: 18, especie: "Boldo",   origen: "Hacienda Las Quilas, Región del Biobío",           dim: "2x4x300 cm / 12.50 metros cúbicos", disp: "Disponible", fecha: "06 de mayo de 2026"  },
+                    { id: 19, especie: "Roble",   origen: "Predio Santa María, Región del Ñuble",             dim: "2x6x320 cm / 18.00 metros cúbicos", disp: "Disponible", fecha: "28 de abril de 2026" },
+                    { id: 20, especie: "Maiten",  origen: "Fundo Los Pellines, Región de Los Ríos",           dim: "2x4x300 cm / 12.50 metros cúbicos", disp: "Ocupado",    fecha: "29 de abril de 2026" }
+                ]
+            },
+            {
+                id: 5, name: "MADERAS DEL SUR S.A", status: "amarillo", msg: "lotes en proceso de verificacion",
+                dir: "Fundo El Belloto, Región de O'Higgins", tel: "+56 9 9999 0000", email: "FORESTAL@MADERASDELSURSA.cl",
+                planManejo: "05 de octubre de 2026",
+                lotes: [
+                    { id: 21, especie: "Lingue",       origen: "Fundo El Belloto, Región de O'Higgins",      dim: "2x5x320 cm / 15.00 metros cúbicos", disp: "Disponible", fecha: "30 de abril de 2026" },
+                    { id: 22, especie: "Avellanillo",  origen: "Hacienda El Ruil, Región del Maule",          dim: "2x4x300 cm / 12.50 metros cúbicos", disp: "Disponible", fecha: "01 de mayo de 2026"  },
+                    { id: 23, especie: "Pino radiata", origen: "Fundo San Pedro, Región de la Araucanía",     dim: "2x8x400 cm / 25.00 metros cúbicos", disp: "Ocupado",    fecha: "02 de mayo de 2026"  },
+                    { id: 24, especie: "Eucalipto",    origen: "Predio La Cascada, Región del Biobío",        dim: "2x4x300 cm / 12.50 metros cúbicos", disp: "Disponible", fecha: "03 de mayo de 2026"  },
+                    { id: 25, especie: "Alamo",        origen: "Fundo Los Copihues, Región del Ñuble",        dim: "2x6x400 cm / 20.00 metros cúbicos", disp: "Disponible", fecha: "04 de mayo de 2026"  }
+                ]
+            },
+            {
+                id: 6, name: "CORDILLERA S.A", status: "rojo", msg: "multado ultimamente",
+                dir: "Hacienda Las Alerces, Región de Los Ríos", tel: "+56 9 1212 3434", email: "FORESTAL@CORDILLERASA.cl",
+                planManejo: "15 de noviembre de 2026",
+                lotes: [
+                    { id: 26, especie: "Oregon",  origen: "Hacienda Las Alerces, Región de Los Ríos",        dim: "2x4x300 cm / 12.50 metros cúbicos", disp: "Ocupado",    fecha: "05 de mayo de 2026"  },
+                    { id: 27, especie: "Quillay", origen: "Fundo La Esperanza, Región de O'Higgins",          dim: "1x6x300 cm / 10.00 metros cúbicos", disp: "Disponible", fecha: "06 de mayo de 2026"  },
+                    { id: 28, especie: "Peumo",   origen: "Predio El Canelo, Región del Maule",               dim: "2x4x300 cm / 12.50 metros cúbicos", disp: "Disponible", fecha: "28 de abril de 2026" },
+                    { id: 29, especie: "Boldo",   origen: "Fundo Los Notros, Región de la Araucanía",         dim: "2x5x320 cm / 15.00 metros cúbicos", disp: "Ocupado",    fecha: "29 de abril de 2026" },
+                    { id: 30, especie: "Roble",   origen: "Hacienda El Maqui, Región del Biobío",             dim: "2x8x400 cm / 25.00 metros cúbicos", disp: "Disponible", fecha: "30 de abril de 2026" },
+                    { id: 31, especie: "Maiten",  origen: "Predio Las Bandurrias, Región del Ñuble",          dim: "2x4x300 cm / 12.50 metros cúbicos", disp: "Disponible", fecha: "01 de mayo de 2026"  },
+                    { id: 32, especie: "Lingue",  origen: "Fundo El Arrayán, Región de Los Ríos",             dim: "2x6x400 cm / 20.00 metros cúbicos", disp: "Ocupado",    fecha: "02 de mayo de 2026"  }
+                ]
+            },
+            {
+                id: 7, name: "BOSQUES BIO BIO S.A", status: "verde", msg: "certificado y al dia",
+                dir: "Fundo Los Notros, Región de la Araucanía", tel: "+56 9 5656 7878", email: "FORESTAL@BOSQUESBIOBIOSA.cl",
+                planManejo: "01 de diciembre de 2026",
+                lotes: [
+                    { id: 33, especie: "Avellanillo",  origen: "Fundo El Roble, Región de la Araucanía",     dim: "2x4x300 cm / 12.50 metros cúbicos", disp: "Disponible", fecha: "03 de mayo de 2026" },
+                    { id: 34, especie: "Pino radiata", origen: "Hacienda Las Quilas, Región del Biobío",      dim: "2x6x320 cm / 18.00 metros cúbicos", disp: "Disponible", fecha: "04 de mayo de 2026" },
+                    { id: 35, especie: "Eucalipto",    origen: "Predio Santa María, Región del Ñuble",        dim: "1x4x200 cm / 8.50 metros cúbicos",  disp: "Ocupado",    fecha: "05 de mayo de 2026" }
+                ]
+            }
+        ];
+
+        let currentVendor = null;
+
+        // ============================================================
+        // --- Renderizar Marketplace ---
+        // ✅ CAMBIO: La imagen ahora usa img/user_logo.png
+        //    El onerror muestra un placeholder si el archivo no existe
+        // ============================================================
+        const vendorList = document.getElementById('vendor-list');
+        vendors.forEach(v => {
+            const card = document.createElement('div');
+            card.className = `vendor-card status-${v.status}`;
+            card.onclick = () => verVendedor(v.id);
+            card.innerHTML = `
+                <img
+                    src="img/user_logo.png"
+                    alt="Logo ${v.name}"
+                    class="vendor-img"
+                    onerror="this.src='https://via.placeholder.com/80?text=Logo'"
+                >
+                <h3>${v.name}</h3>
+                <span class="badge ${v.status}">${v.msg.toUpperCase()}</span>
+            `;
+            vendorList.appendChild(card);
+        });
+
+        // ============================================================
+        // --- Ver Vendedor ---
+        // ============================================================
+        function verVendedor(id) {
+            currentVendor = vendors.find(v => v.id === id);
+
+            // Solo mostrar los documentos reales para CELULOSA ARAUCO (id 1)
+            let linkPredio = "#";
+            let linkPlan = "#";
+            let linkFSC = "#";
+            let targetAttr = "";
+
+            if (currentVendor.id === 1) {
+                linkPredio = "documentos_arauco/predio.webp";
+                linkPlan = "documentos_arauco/Plan_de_Manejo_Scribd_Copia.pdf";
+                linkFSC = "documentos_arauco/certificacion_fsc.jpg";
+                targetAttr = 'target="_blank" rel="noopener noreferrer"';
+            }
+
+            document.getElementById('vendor-info-card').innerHTML = `
+                <h2>${currentVendor.name}</h2>
+                <div style="margin-top: 15px; line-height: 1.8;">
+                    <p>📍 <strong>Dirección:</strong> ${currentVendor.dir}</p>
+                    <p>📞 <strong>Teléfono:</strong> ${currentVendor.tel}</p>
+                    <p>✉️ <strong>Correo:</strong> ${currentVendor.email}</p>
+                    <p>📄 Copia de inscripción de dominio del predio
+                        <a href="${linkPredio}" class="doc-link" ${targetAttr}>(ver documentos)</a>
+                    </p>
+                    <p>🌲 Plan de Manejo aprobado por CONAF (vence: ${currentVendor.planManejo})
+                        <a href="${linkPlan}" class="doc-link" ${targetAttr}>(ver documentos)</a>
+                    </p>
+                    <p>📜 Certificado FSC
+                        <a href="${linkFSC}" class="doc-link" ${targetAttr}>(ver documentos)</a>
+                    </p>
+                </div>
+            `;
+
+            const lotesDiv = document.getElementById('lotes-list');
+            lotesDiv.innerHTML = '';
+            currentVendor.lotes.forEach(l => {
+                const item = document.createElement('div');
+                item.className = 'lote-item';
+                item.onclick = () => verLote(l);
+                item.innerHTML = `
+                    <strong>Lote #${l.id}: ${l.especie}</strong>
+                    <span style="color: ${l.disp === 'Disponible' ? '#4caf50' : '#f44336'};
+                                 float: right; font-weight: bold;">
+                        ${l.disp}
+                    </span>
+                    <p style="font-size: 0.9rem; color: #555;">Origen: ${l.origen}</p>
+                `;
+                lotesDiv.appendChild(item);
+            });
+
+            navigate('vendedor-detalle');
+        }
+
+        // ============================================================
+        // --- Ver Lote ---
+        // ✅ CAMBIOS EN ESTA FUNCIÓN:
+        //    1. La foto del lote ahora usa img/foto_lote.jpg
+        //    2. Se añade el botón "Ver certificado" que abre
+        //       certificados/certificado_ID.pdf en una nueva pestaña
+        // ============================================================
+        function verLote(lote) {
+            // ✅ Actualizar la URL automáticamente para que sirva para tu Código QR
+            window.history.pushState({}, "", "?lote=" + lote.id);
+
+            // ✅ Ruta del certificado basada en el ID del lote
+            const rutaCertificado = `certificados/certificado_${lote.id}.pdf`;
+
+            // ✅ Lógica para el documento específico del Lote 1
+            let linkCertificadosLote = "#";
+            let targetLoteAttr = "";
+            if (lote.id === 1) {
+                linkCertificadosLote = "documentos_arauco/1.webp";
+                targetLoteAttr = 'target="_blank" rel="noopener noreferrer"';
+            }
+
+            document.getElementById('lote-info-card').innerHTML = `
+                <h2 style="color: var(--primary-green); margin-bottom: 20px;">
+                    Detalle del Lote #${lote.id}
+                </h2>
+
+                <ul style="list-style: none; line-height: 2;">
+                    <li>🌳 <strong>Especie:</strong> ${lote.especie}</li>
+                    <li>📍 <strong>Origen geográfico:</strong> ${lote.origen}</li>
+                    <li>📏 <strong>Dimensiones/Volumen:</strong> ${lote.dim}</li>
+                    <li>📄 <strong>Certificados:</strong>
+                        <a href="${linkCertificadosLote}" class="doc-link" ${targetLoteAttr}>(ver documentos)</a>
+                    </li>
+                    <li>🏷️ <strong>Disponibilidad:</strong>
+                        <strong style="color: ${lote.disp === 'Disponible' ? '#4caf50' : '#f44336'}">
+                            ${lote.disp}
+                        </strong>
+                    </li>
+                    <li>🔗 <strong>Cadena de custodia:</strong>
+                        Cadena completa desde el bosque hasta el aserradero
+                    </li>
+                    <li>📅 <strong>Fecha de ingreso:</strong> ${lote.fecha}</li>
+                    <li>✅ <strong>Sello Verde:</strong> SI</li>
+                </ul>
+
+                <!-- ✅ NUEVO: Botón Ver Certificado -->
+                <div class="certificado-box">
+                    <p>📋 Certificado oficial de este lote disponible para descarga:</p>
+                    <a
+                        href="${rutaCertificado}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="btn-certificado"
+                    >
+                        📄 Ver Certificado (Lote #${lote.id})
+                    </a>
+                </div>
+
+                <!-- ✅ CAMBIO: Foto del lote ahora usa img/foto_lote.jpg -->
+                <div style="margin-top: 30px; text-align: center;">
+                    <p style="margin-bottom: 10px;">📸 <strong>Fotos del Lote</strong></p>
+                    <img
+                        src="img/foto_lote.jpg"
+                        alt="Foto del Lote #${lote.id}"
+                        style="border-radius: 8px; box-shadow: var(--shadow-soft);
+                               max-width: 100%; width: 300px;"
+                        onerror="this.src='https://via.placeholder.com/300x200?text=Foto+del+Lote'"
+                    >
+                </div>
+            `;
+
+            navigate('lote-detalle');
+        }
+
+        // ✅ Leer la URL al abrir la página. Si hay un ?lote=ID, ir directo a ese lote.
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const loteId = urlParams.get('lote');
+            const seccionId = urlParams.get('seccion');
+            
+            if (loteId) {
+                for (let v of vendors) {
+                    const loteEncontrado = v.lotes.find(l => l.id == loteId);
+                    if (loteEncontrado) {
+                        verVendedor(v.id);       // Carga el vendedor primero (para el botón Volver)
+                        verLote(loteEncontrado); // Abre el lote automáticamente
+                        break;
+                    }
+                }
+            } else if (seccionId) {
+                const sec = document.getElementById(seccionId);
+                if (sec) navigate(seccionId, false);
+            }
+        });
+    </script>
+</body>
+</html>
