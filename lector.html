@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validador QR - Sello Raíz Segura</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        h1 {
+            color: #2e7d32;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+        #reader {
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .result {
+            display: none;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        .invalid {
+            display: block;
+            background-color: #ffebee;
+            border: 1px solid #ef5350;
+            color: #c62828;
+            animation: fadeIn 0.3s;
+        }
+        .invalid h3 {
+            margin-top: 0;
+        }
+        .btn-inscribir {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #1565c0;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .btn-back {
+            display: block;
+            margin-top: 20px;
+            color: #666;
+            text-decoration: none;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+    <!-- Incluir librería oficial para lectura de QR -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>📸 Escáner de Trazabilidad</h1>
+        <p style="color: #555; font-size: 0.9rem; margin-bottom: 20px;">
+            Apunta la cámara de tu teléfono al código QR del lote de madera para verificar su autenticidad.
+        </p>
+
+        <div id="reader"></div>
+
+        <div id="error-msg" class="result">
+            <h3>❌ Código QR Inválido</h3>
+            <p>Madera no certificada bajo los estándares de calidad del Sello Raíz Segura.</p>
+            <a href="index.html?seccion=productor" class="btn-inscribir">Inscribir lote maderero</a>
+        </div>
+
+        <a href="index.html" class="btn-back">⬅ Volver a la página principal</a>
+    </div>
+
+    <script>
+        function onScanSuccess(decodedText, decodedResult) {
+            // OPCIÓN 2: El código es reconocido y pertenece a nuestra base de datos
+            // Detectamos si es un link que tenga "?lote=" (de nuestro sistema Sello Raíz Segura)
+            if (decodedText.includes("?lote=")) {
+                // Redirigir directamente al link del lote
+                window.location.href = decodedText;
+            } else {
+                // OPCIÓN 1: El código QR no está en la base de datos (invalido)
+                html5QrcodeScanner.pause(true); // Pausa la cámara temporalmente
+                document.getElementById('error-msg').classList.add('invalid');
+                
+                // Permitimos que el mensaje desaparezca en 6 segundos para volver a intentar
+                setTimeout(() => {
+                    document.getElementById('error-msg').classList.remove('invalid');
+                    html5QrcodeScanner.resume();
+                }, 6000);
+            }
+        }
+
+        function onScanFailure(error) {
+            // Se ejecuta constantemente mientras busca un QR. Lo ignoramos para no saturar.
+        }
+
+        // Inicializar el escáner pidiendo permisos de cámara
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader",
+            { fps: 10, qrbox: {width: 250, height: 250} },
+            /* verbose= */ false);
+        
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    </script>
+</body>
+</html>
